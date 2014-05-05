@@ -1,0 +1,30 @@
+SELECT 
+	--CAST(K.Datum as nvarchar(11)) as Datum, 
+	CAST(DATEPART(DAY,K.Datum) as varchar)+'/'+CAST(DATEPART(MONTH,K.Datum) as varchar)+'/'+CAST(DATEPART(YEAR,K.Datum) as varchar) as Datum,
+	CAST(K.Broj as varchar)+' - '+K.Klijent+', '+K.UserName as Broj, 
+	RIGHT('         '+CAST(CAST(KUID.CBezPor as numeric(9,2)) as varchar),8) as CBezPor,
+	RIGHT('         '+CAST(CAST(KUID.Porez as numeric(9,2)) as varchar),8) as Porez,
+	RIGHT('         '+CAST(CAST(KUID.Ukupno as numeric(9,2)) as varchar),9) as Ukupno,
+	(
+		SELECT RIGHT('         '+CAST(CAST(Round(Sum(KUID.CBezPor),2) as numeric(9,2)) as varchar),10) as CBezPor
+		FROM KasaUIDSummVr KUID 
+		LEFT JOIN KasaG K ON KUID.vID=K.vID
+		###
+	) as UkBezPDV,
+	(
+		SELECT RIGHT('         '+CAST(CAST(Round(Sum(KUID.Porez),2) as numeric(9,2)) as varchar),10) as CBezPor
+		FROM KasaUIDSummVr KUID
+		LEFT JOIN KasaG K ON KUID.vID=K.vID
+		###
+	) as UkPorez,
+	(
+		SELECT RIGHT('         '+CAST(CAST(Round(Sum(KUID.Ukupno),5) as numeric(18,5)) as varchar),10) as CBezPor
+		FROM KasaUIDSummVr KUID
+		LEFT JOIN KasaG K ON KUID.vID=K.vID
+		###
+	) as UkVr,
+	K.Klijent, K.UserName
+FROM KasaUIDSummVr KUID
+LEFT JOIN KasaG K ON KUID.vID=K.vID
+###
+Order By CAST(K.Broj as numeric)

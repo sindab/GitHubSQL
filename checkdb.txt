@@ -1,0 +1,15 @@
+DBCC CHECKDB 
+    ( 'database_name' 
+            [ , NOINDEX 
+                | { REPAIR_ALLOW_DATA_LOSS 
+                    | REPAIR_FAST 
+                    | REPAIR_REBUILD 
+                    } ] 
+    )    [ WITH { [ ALL_ERRORMSGS ] 
+                    [ , [ NO_INFOMSGS ] ] 
+                    [ , [ TABLOCK ] ] 
+                    [ , [ ESTIMATEONLY ] ] 
+                    [ , [ PHYSICAL_ONLY ] ] 
+                    } 
+        ] 
+

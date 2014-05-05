@@ -1,0 +1,113 @@
+/****** Object:  StoredProcedure [dbo].[ArhivirajKasu]    Script Date: 06/11/2013 10:54:51 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[ArhivirajKasu](
+	@mID as int
+)
+
+AS
+
+/* 
+DECLARE @mID as int
+SET @mID = 1
+*/
+DECLARE @month as int
+SELECT @month = DATEPART(month, GETDATE()) --select @month
+
+--DECLARE @days as int
+--SET @days = 11
+
+DECLARE crsHost CURSOR
+READ_ONLY
+FOR SELECT [ID],[Name] FROM Host --WHERE name in (SELECT DISTINCT Klijent FROM KasaG)
+
+DECLARE @name varchar(40)
+DECLARE @id int
+
+OPEN crsHost
+
+FETCH NEXT FROM crsHost INTO @id, @name
+WHILE (@@fetch_status <> -1)
+BEGIN
+	IF (@@fetch_status <> -2)
+	BEGIN
+		IF EXISTS (SELECT * FROM tempdb..sysobjects WHERE id=OBJECT_ID('tempdb..#tmpErrors')) DROP TABLE #tmpErrors
+		CREATE TABLE #tmpErrors (Error int)
+		BEGIN TRANSACTION
+			if NOT exists (select * from dbo.sysobjects where id = object_id(N'[KasaGArhiva]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+			BEGIN
+				SELECT [vID], mID, [RAS], [Datum], [Broj], [ParID], [Klijent], [UserName], [Placanje], [Sto], [Gotovina], [Kartica], [Cek], [Virman], [ReklRacBr], [ReklamiraoIme], [ReklamiraoJMBG] 
+				INTO KasaGArhiva
+				FROM KasaG
+--WHERE
+				WHERE DATEPART(month,Datum)<@month --DATEDIFF(DAY, Datum, GetDate()) > ABS(@days) 
+					and Klijent = @name 
+					--and vID < (SELECT MAX(vID) FROM KasaG WHERE Klijent = @name) 
+					and mID = @mID
+
+				SELECT [vID], [ProID], [RedBr], [Kol], [Cena], [CSaPor], [Rabat], [Tarifa], IDENTITY(int, 1, 1) AS AutoID
+				INTO KasaSArhiva
+				FROM KasaS 
+				WHERE vID IN (
+					SELECT vID 
+					FROM KasaG
+--WHERE
+					WHERE DATEPART(month,Datum)<@month --DATEDIFF(DAY, Datum, GetDate()) > ABS(@days) 
+						and Klijent = @name 
+						--and vID < (SELECT MAX(vID) FROM KasaG WHERE Klijent = @name) 
+						and mID = @mID
+					)
+			END ELSE BEGIN 
+				INSERT INTO [KasaGArhiva]([vID], [mID], [RAS], [Datum], [Broj], [ParID], [Klijent], [UserName], 
+					[Placanje], [Sto], [Gotovina], [Kartica], [Cek], [Virman], [ReklRacBr], [ReklamiraoIme], [ReklamiraoJMBG])
+				SELECT [vID], [mID], [RAS], [Datum], [Broj], [ParID], [Klijent], [UserName], 
+					[Placanje], [Sto], [Gotovina], [Kartica], [Cek], [Virman], [ReklRacBr], [ReklamiraoIme], [ReklamiraoJMBG] 
+				FROM KasaG
+--WHERE
+				WHERE DATEPART(month,Datum)<@month --DATEDIFF(DAY, Datum, GetDate()) > ABS(@days) 
+					and Klijent = @name 
+					--and vID < (SELECT MAX(vID) FROM KasaG WHERE Klijent = @name) 
+					and mID = @mID
+				
+				INSERT INTO [KasaSArhiva]([vID], [ProID], [RedBr], [Kol], [Cena], [CSaPor], [Rabat], [Tarifa])
+				SELECT [vID], [ProID], [RedBr], [Kol], [Cena], [CSaPor], [Rabat], [Tarifa] 
+				FROM KasaS 
+				WHERE vID IN (
+					SELECT vID 
+					FROM KasaG
+--WHERE
+					WHERE DATEPART(month,Datum)<@month --DATEDIFF(DAY, Datum, GetDate()) > ABS(@days) 
+						and Klijent = @name 
+						--and vID < (SELECT MAX(vID) FROM KasaG WHERE Klijent = @name) 
+						and mID = @mID
+					)
+			END
+		---------------------------------------------------	
+		DECLARE @sql as nvarchar(2000)
+		SET @sql = '
+ 			DELETE FROM KasaS' + CAST(@ID as varchar(10)) + ' 
+			WHERE vID IN (SELECT vID FROM KasaSArhiva)
+
+ 			DELETE FROM KasaG' + CAST(@ID as varchar(10)) + '
+			WHERE vID IN (SELECT vID FROM KasaGArhiva)'
+		EXEC(@sql)
+		
+		IF @@ERROR<>0 AND @@TRANCOUNT>0 ROLLBACK TRANSACTION
+		IF @@TRANCOUNT=0 BEGIN INSERT INTO #tmpErrors (Error) SELECT 1 BEGIN TRANSACTION END
+		IF EXISTS (SELECT * FROM #tmpErrors) ROLLBACK TRANSACTION
+		IF @@TRANCOUNT>0 BEGIN
+		PRINT 'Obrisan ' + CAST(@id as varchar(5)) + ' - ' + @name + ' OK'
+		COMMIT TRANSACTION
+		END
+		ELSE PRINT 'GRESKA ' + CAST(@id as varchar(5)) + ' - ' + @name + ' ERROR'
+		DROP TABLE #tmpErrors
+	END
+	FETCH NEXT FROM crsHost INTO @id, @name
+END
+
+CLOSE crsHost
+DEALLOCATE crsHost
+

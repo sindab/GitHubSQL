@@ -1,0 +1,4 @@
+Changing SQL Server collation
+While formatting and reinstalling my computer on Sunday, I realized that my SQL Server Collation wasn't installed in Turkish. Since I was incredibly bored of installing programs, I didn't want to uninstall and reinstall SQL Server. I searched the web and found out that there's a way to change the collation of SQL Server. The answer to do this is in the setup.exe in C:\Program Files\Microsoft SQL Server\90\Setup Bootstrap folder. When you run the command below in command prompt you can change collation of your SQL Server. Important: There is one thing to remember before running this command: you should back up all your user databases!!!!
+
+C:\Program Files\Microsoft SQL Server\90\Setup Bootstrap>start /wait setup.exe /qb INSTANCENAME=MSSQLSERVER REINSTALL=SQL_Engine REBUILDDATABASE=1 SAPWD=pass SQLCOLLATION=TURKISH_CI_AS

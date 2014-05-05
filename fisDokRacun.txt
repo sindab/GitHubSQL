@@ -1,0 +1,29 @@
+SELECT 
+	CASE dbo.ecBitTest(M.[ecBit2], 28) WHEN 0 THEN
+		ABS(CAST(S.Kol as numeric(12, 6)))
+	ELSE
+		CASE M.Tip WHEN 1 THEN CAST(S.MPC * (1 - ISNULL(S.Rabat, 0)) as numeric(12, 6)) ELSE CAST(S.VPC as numeric(12, 6)) END
+	END
+	as Kol,
+	CASE dbo.ecBitTest(M.[ecBit2], 28) WHEN 0 THEN
+		CASE M.Tip WHEN 1 THEN CAST(S.MPC * (1 - ISNULL(S.Rabat, 0)) as numeric(9, 2)) ELSE CAST(S.VPC as numeric(9, 2)) END 
+	ELSE
+		ABS(CAST(S.Kol as numeric(9, 2)))
+	END
+	as CSaPor,
+	CASE S.Porez WHEN 0 THEN CASE M.Tip WHEN 1 THEN 1 ELSE 4 END ELSE 2 END as Stopa,
+	--Left(CAST(S.ProID as nvarchar)+ ' ' + (R.Naziv),32) as Naziv, 
+	--dbo.ecKonverzija(Left(rtrim(CAST(S.ProID as nvarchar(20)))+ ' ' + rtrim(R.Naziv),CASE M.Tip WHEN 1 THEN 32 ELSE 30 END)) as Naziv, 
+	dbo.ecKonverzija(Left(rtrim(CAST(S.ProID as nvarchar(20)))+ ' ' + CASE WHEN M.Tip=0 AND dbo.ecBitTest(M.ecBit2, 8)=1 THEN rtrim(S.Opis) ELSE rtrim(R.Naziv) END,CASE M.Tip WHEN 1 THEN 32 ELSE 30 END)) as Naziv, 
+
+	(Left(R.Naziv,32)) as NazivOnly, R.AutoID ProID,
+	SUBSTRING(CAST(G.vID as varchar(25)), 2, 1) as KasaBr,
+	1 as Grupa,
+	0 [Gotovina], 0 [Kartica], 0 [Cek], 0 [Virman], 1 [ReklRacBr], Partner [ReklamiraoIme], JIB [ReklamiraoJMBG],
+	ABS(S.VpRab) as Rabat
+FROM UID S
+LEFT JOIN Reg as R ON S.ProID = R.ProID 
+LEFT JOIN UI as G ON S.vID = G.vID
+LEFT JOIN Magacin AS M ON G.mID = M.mID
+### AND G.mID = '@mID'
+Order By S.RedBr ASC

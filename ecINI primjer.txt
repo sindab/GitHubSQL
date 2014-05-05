@@ -1,0 +1,10 @@
+Modul	Kljuc	Vrijednost	Opis
+Backup	Dana	5	NULL
+Digit	ParID	0	NULL
+DigitMID	3	,	,
+Firma	Share	\\dbs\Eastcode\Prokontik\NOVO\TEST	NULL
+Lager	Obrazac	                                                  	
+ME	Digit	1	NULL
+Plate	ppoPath	D:\TEMP	NULL
+Progres	Prikazi	1	NULL
+ProstoKnjigovodstvo	RadID	1	NULL

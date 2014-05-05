@@ -1,0 +1,23 @@
+Lic.			Fin.	Nar.
+
+9223372036854774271	+	-
+9223372036854774783	+	+
+9223372036854774015	-	-
+9223372036854774527	-	+
+
+
+
+        Veleprodaja = 0
+        Maloprodaja = 1
+        Magacin = 2
+        Proizvodnja = 3
+        Sifarnik = 4
+        RegistarPartnera = 5
+        RegistarArtikala = 6
+        Izvjestaj = 7
+        Finansije = 8
+        Narudzba = 9
+        Diskont = 10
+        Plate = 11
+        OsnovnaSredstva = 12
+        Carina = 13

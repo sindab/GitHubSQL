@@ -1,0 +1,12 @@
+SELECT 
+	--CAST(K.Datum as nvarchar(11)) as Datum, 
+	CAST(DATEPART(DAY,K.Datum) as varchar)+'/'+CAST(DATEPART(MONTH,K.Datum) as varchar)+'/'+CAST(DATEPART(YEAR,K.Datum) as varchar) as Datum,
+	CAST(K.Broj as varchar)+' - '+K.Klijent+', '+K.UserName as Broj, 
+	KUID.CBezPor,
+	KUID.Porez,
+	KUID.Ukupno,
+	K.Klijent, K.UserName
+FROM KasaUIDSummVr KUID
+LEFT JOIN KasaG K ON KUID.vID=K.vID
+###
+Order By CAST(K.Broj as numeric)
